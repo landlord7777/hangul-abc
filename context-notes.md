@@ -85,6 +85,25 @@
   - 분량은 수천 개 이하의 짧은 낱말·문장이라 어느 쪽이든 비용은 1~2달러 수준으로 예상한다.
   - **API 키는 공개 저장소와 앱에 절대 넣지 않는다.** 생성 스크립트는 PC에서만 돌리고, 키는 git에서 제외된 `.env`에 둔다. 저장소에는 결과 MP3만 올린다.
 
+## 2026-11-24 — 무료(오픈소스) TTS 검토 (결정 대기)
+
+- 사용자가 비용이 들지 않는 방향을 원한다. 오픈소스 TTS를 PC에서 돌려 음성 파일을 미리 만드는 방향을 검토했다.
+- **PC 사양** — i5-6500(4코어, 2015년), RAM 16GB, 내장 그래픽(Intel HD 530)이라 CUDA를 쓸 수 없다. CPU로만 생성해야 한다. C 드라이브 여유 공간은 약 66GB.
+- **후보** (조사 자료끼리 엇갈리는 부분이 있어 설치 전에 모델 카드로 다시 확인한다)
+  - Qwen3-TTS 0.6B — Apache 2.0, 한국어 포함 10개 언어. 품질 기대가 가장 높지만 CPU에서는 느릴 것이다. PC가 항상 켜져 있으므로 밤새 생성하는 방식으로 감당할 수 있다.
+  - MeloTTS — MIT, 한국어·영어 지원, 가벼워서 CPU에서도 빠르다. 다만 설치가 까다로운 편이다(Python 버전, 한국어 형태소 분석기).
+  - Kokoro 82M — Apache 2.0, 영어 품질이 좋고 CPU에서 빠르다. 한국어 지원 여부는 자료끼리 엇갈려서 영어 후보로만 본다.
+  - 제외 — XTTS-v2와 F5-TTS는 모델 가중치가 비상업 라이선스다. 가정용이라 쓸 수는 있지만 결과물이 공개 저장소에 올라가므로 허용 라이선스를 우선한다. edge-tts는 무료이고 음질도 좋지만 Microsoft 서비스를 비공식으로 쓰는 방식이라 권하지 않는다.
+- **진행 방식(안)** — 후보마다 같은 샘플(그, 윽, 나무, 문장 / B, ball, cat, 문장)을 만들어 확인 페이지에 올리고, 사용자가 아이패드에서 들어본 뒤 고른다. Python 환경과 모델 파일은 OneDrive 동기화를 피하려고 프로젝트 폴더 밖(`C:\Users\1\tts-work`)에 둔다. 생성 스크립트만 저장소의 `tools/tts/`에 둔다.
+
+## 2026-11-24 — 오픈소스 TTS 설치와 샘플 생성 결과
+
+- **환경** — uv로 Python 3.12(Kokoro, Qwen)와 3.10(MeloTTS)을 받아 `C:\Users\1\tts-work\{kokoro,qwen,melo}`에 엔진별 가상환경을 만들었다. 모두 CPU용 torch 2.15이고, 모델 캐시는 `HF_HOME=C:\Users\1\tts-work\hf-cache`에 둔다. 생성 스크립트는 저장소의 `tools/tts/`에 있고, 결과는 `public/voice-samples/<엔진>.json`과 WAV 파일로 저장된다.
+- **실행 방법** — `HF_HOME=C:/Users/1/tts-work/hf-cache C:/Users/1/tts-work/<엔진>/Scripts/python.exe tools/tts/gen_<엔진>.py`를 프로젝트 루트에서 실행한다.
+- **Kokoro** — spaCy 영어 모델을 받으려면 가상환경에 pip가 있어야 한다(uv venv에는 기본으로 없음). 첫 낱말은 9초, 나머지는 약 1초 걸렸다.
+- **Qwen3-TTS (0.6B, CPU float32)** — 한 개에 14~165초 걸렸다. 한 글자 입력에서 말을 끝내지 못하는 문제가 있다("윽" 8.7초, Sohee의 영어 "B" 9.1초). 이 엔진을 고르면 길이 제한이나 다른 문장 형태가 필요하다.
+- **MeloTTS (Windows 비공식)** — 한국어 발음 변환기 g2pkk가 Windows에서는 eunjeon(C++ 빌드 필요)을 요구한다. 그래서 python-mecab-ko를 `tts-work\mecabko`에 따로 설치하고, 그 안에 `eunjeon.py` 연결 모듈을 두었다. melo 가상환경의 `mecabko.pth`가 이 경로를 가리킨다. 같은 폴더에 설치하면 Windows가 대소문자를 구분하지 않아 일본어용 `MeCab`과 한국어용 `mecab` 폴더가 섞여 깨지므로 반드시 분리한다. 모델을 불러오는 첫 낱말은 40~50초, 나머지는 1~2초 걸렸다. 소리 길이는 모두 정상이었다.
+
 ## 참고 자료
 - 무료 Apple ID 7일 제한, Xcode Personal Team — https://adonaiohesed.github.io/posts/ios_sideloading/ , https://sideloadly.io/faq
 - iPadOS 26 홈 화면 웹앱 기본 동작 — https://heise.de/-10749652 , https://webkit.org/blog/17333/webkit-features-in-safari-26-0/

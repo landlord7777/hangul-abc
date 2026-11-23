@@ -1,0 +1,80 @@
+[
+ {
+  "voice": "Sohee",
+  "lang": "ko",
+  "text": "그",
+  "file": "qwen/ko-Sohee-0.wav"
+ },
+ {
+  "voice": "Sohee",
+  "lang": "ko",
+  "text": "윽",
+  "file": "qwen/ko-Sohee-1.wav"
+ },
+ {
+  "voice": "Sohee",
+  "lang": "ko",
+  "text": "기역",
+  "file": "qwen/ko-Sohee-2.wav"
+ },
+ {
+  "voice": "Sohee",
+  "lang": "ko",
+  "text": "나무",
+  "file": "qwen/ko-Sohee-3.wav"
+ },
+ {
+  "voice": "Sohee",
+  "lang": "ko",
+  "text": "고양이가 잠을 자요.",
+  "file": "qwen/ko-Sohee-4.wav"
+ },
+ {
+  "voice": "Aiden",
+  "lang": "en",
+  "text": "B",
+  "file": "qwen/en-Aiden-5.wav"
+ },
+ {
+  "voice": "Aiden",
+  "lang": "en",
+  "text": "B, ball",
+  "file": "qwen/en-Aiden-6.wav"
+ },
+ {
+  "voice": "Aiden",
+  "lang": "en",
+  "text": "cat",
+  "file": "qwen/en-Aiden-7.wav"
+ },
+ {
+  "voice": "Aiden",
+  "lang": "en",
+  "text": "I see a red cat.",
+  "file": "qwen/en-Aiden-8.wav"
+ },
+ {
+  "voice": "Sohee",
+  "lang": "en",
+  "text": "B",
+  "file": "qwen/en-Sohee-9.wav"
+ },
+ {
+  "voice": "Sohee",
+  "lang": "en",
+  "text": "B, ball",
+  "file": "qwen/en-Sohee-10.wav"
+ },
+ {
+  "voice": "Sohee",
+  "lang": "en",
+  "text": "cat",
+  "file": "qwen/en-Sohee-11.wav"
+ },
+ {
+  "voice": "Sohee",
+  "lang": "en",
+  "text": "I see a red cat.",
+  "file": "qwen/en-Sohee-12.wav"
+ }
+]
