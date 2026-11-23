@@ -4,6 +4,7 @@ import EnvCheck from './check/EnvCheck'
 import TtsCheck from './check/TtsCheck'
 import DrawCheck from './check/DrawCheck'
 import StorageCheck from './check/StorageCheck'
+import VoiceCompare from './check/VoiceCompare'
 import { reportText } from './check/report'
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
         {copied && <span className="ok"> 복사했습니다</span>}
         {text && <textarea readOnly value={text} />}
       </section>
+      <VoiceCompare />
     </main>
   )
 }
