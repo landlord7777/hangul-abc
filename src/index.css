@@ -1,0 +1,116 @@
+/* 0단계 확인 화면의 기본 스타일 (분홍 파스텔) */
+:root {
+  --bg: #fff0f7;
+  --card: #ffffff;
+  --pink: #ff8fc7;
+  --pink-dark: #d94f97;
+  --lavender: #e9d8ff;
+  --text: #4a2b3f;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 16px 48px;
+}
+
+h1 {
+  color: var(--pink-dark);
+  font-size: 28px;
+}
+
+section {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(217, 79, 151, 0.12);
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+button {
+  min-height: 56px;
+  min-width: 56px;
+  padding: 8px 18px;
+  margin: 4px;
+  border: none;
+  border-radius: 16px;
+  background: var(--lavender);
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+button:active {
+  background: var(--pink);
+  color: #fff;
+}
+
+select,
+input[type='range'] {
+  font-size: 18px;
+  min-height: 44px;
+  max-width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 16px;
+}
+
+td {
+  padding: 4px 8px;
+  border-bottom: 1px solid #f6d6e7;
+  vertical-align: top;
+}
+
+td:first-child {
+  white-space: nowrap;
+  color: #8a6078;
+}
+
+.ok {
+  color: #1d8a4e;
+  font-weight: 700;
+}
+
+.bad {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+canvas {
+  width: 100%;
+  height: 320px;
+  background: #fffafd;
+  border: 2px dashed var(--pink);
+  border-radius: 16px;
+  touch-action: none;
+}
+
+textarea {
+  width: 100%;
+  height: 160px;
+  font-size: 13px;
+  -webkit-user-select: text;
+  user-select: text;
+}
