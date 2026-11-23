@@ -69,6 +69,12 @@
 - Pages 빌드 방식은 GitHub Actions(`build_type=workflow`)로 API에서 켰다. 첫 실행은 성공(빌드 18초, 배포 17초).
 - 경고 — configure-pages@v5, upload-pages-artifact 내부의 upload-artifact, deploy-pages@v4가 Node.js 20 대상이라 Node 24로 강제 실행된다는 안내가 나왔다. 지금은 동작하므로 두고, 새 메이저 버전이 나오면 올린다.
 
+## 2026-11-24 — 아이패드 1차 확인 결과
+
+- 홈 화면 실행, 기록 유지, 오프라인 실행은 모두 정상이다.
+- **펜슬** — 메모 앱에서는 손이 닿아도 선이 생기지 않는다. 사용 중인 펜슬이 아이패드에 "펜"으로 인식되는 제품으로 보인다. 웹앱에서는 "첫 번째 입력만 그리기"로는 부족했다. 손바닥이 먼저 닿으면 손바닥이 첫 입력이 되기 때문이다. 그래서 pointerType "pen"이 한 번이라도 들어오면 그 기기에서는 손 터치로 그리지 않는 **펜슬 전용 모드**로 바꿨다(localStorage에 기억). 손 터치로 그리는 중에 펜슬이 들어오면 펜슬로 넘긴다. 재확인 대기.
+- **음성이 기계음 같다** — 사용자는 설정의 "Siri 음성 2"가 더 좋다고 한다. Siri 음성은 Apple이 다른 앱과 웹에 열어주지 않아서 웹앱에서는 쓸 수 없다. 남은 선택지는 두 가지다. ① 아이패드에서 향상됨·프리미엄 음성을 내려받아 쓴다(무료, 바로 확인 가능). ② 클라우드 신경망 TTS로 음성 파일을 미리 만들어 앱에 넣는다. 녹음은 하지 않으면서 Siri에 가까운 음질을 얻을 수 있고 기기와 상관없이 같은 소리가 난다. 대신 클라우드 계정(카드 등록)이 필요하고, 아이 이름처럼 그때그때 바뀌는 문장은 기기 TTS로 대신해야 한다. ①을 먼저 확인한 뒤 결정한다.
+
 ## 참고 자료
 - 무료 Apple ID 7일 제한, Xcode Personal Team — https://adonaiohesed.github.io/posts/ios_sideloading/ , https://sideloadly.io/faq
 - iPadOS 26 홈 화면 웹앱 기본 동작 — https://heise.de/-10749652 , https://webkit.org/blog/17333/webkit-features-in-safari-26-0/
