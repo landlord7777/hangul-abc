@@ -59,7 +59,8 @@ button {
   font-weight: 600;
 }
 
-button:active {
+button:active,
+button.selected {
   background: var(--pink);
   color: #fff;
 }
