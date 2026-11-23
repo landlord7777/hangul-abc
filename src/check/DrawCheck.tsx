@@ -2,12 +2,25 @@
 import { useEffect, useRef, useState } from 'react'
 import { setReport } from './report'
 
+const PEN_KEY = 'check.penSeen'
+
+function loadPenSeen() {
+  try {
+    return localStorage.getItem(PEN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 export default function DrawCheck() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const activeId = useRef<number | null>(null)
+  const activeType = useRef<string | null>(null)
   const last = useRef<{ x: number; y: number } | null>(null)
   const [types, setTypes] = useState<string[]>([])
   const [ignored, setIgnored] = useState(0)
+  // 펜슬을 한 번이라도 쓰면 그 뒤로는 손가락·손바닥 터치로 그리지 않는다.
+  const [penOnly, setPenOnly] = useState(loadPenSeen)
 
   const reset = () => {
     const canvas = canvasRef.current!
@@ -36,15 +49,25 @@ export default function DrawCheck() {
   }
 
   const onDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    // 이미 그리는 중이면 두 번째 터치(손바닥 등)는 무시한다.
-    if (activeId.current !== null) {
+    setTypes((t) => (t.includes(e.pointerType) ? t : [...t, e.pointerType]))
+    if (e.pointerType === 'pen' && !penOnly) {
+      setPenOnly(true)
+      try {
+        localStorage.setItem(PEN_KEY, '1')
+      } catch {
+        // 저장 실패 시 이번 실행 동안만 펜슬 전용으로 동작한다.
+      }
+    }
+    // 펜슬 전용이면 손 터치는 무시한다. 손 터치로 그리는 중에 펜슬이 오면 펜슬로 넘긴다.
+    const takeOver = e.pointerType === 'pen' && activeType.current === 'touch'
+    if ((penOnly && e.pointerType === 'touch') || (activeId.current !== null && !takeOver)) {
       setIgnored((n) => n + 1)
       return
     }
     activeId.current = e.pointerId
+    activeType.current = e.pointerType
     e.currentTarget.setPointerCapture(e.pointerId)
     last.current = pos(e)
-    setTypes((t) => (t.includes(e.pointerType) ? t : [...t, e.pointerType]))
   }
 
   const onMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -61,11 +84,13 @@ export default function DrawCheck() {
   const onUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (e.pointerId !== activeId.current) return
     activeId.current = null
+    activeType.current = null
     last.current = null
   }
 
   setReport('그리기 입력 종류', types.join(', ') || '(아직 안 그림)')
   setReport('무시한 추가 터치', String(ignored))
+  setReport('펜슬 전용 모드', String(penOnly))
 
   return (
     <section>
@@ -79,7 +104,8 @@ export default function DrawCheck() {
         onPointerCancel={onUp}
       />
       <p>
-        입력 종류: <b>{types.join(', ') || '-'}</b> · 무시한 추가 터치: <b>{ignored}</b>
+        입력 종류: <b>{types.join(', ') || '-'}</b> · 무시한 추가 터치: <b>{ignored}</b> · 펜슬 전용:{' '}
+        <b className={penOnly ? 'ok' : undefined}>{penOnly ? '켜짐' : '꺼짐 (펜슬을 쓰면 자동으로 켜짐)'}</b>
       </p>
       <button onClick={reset}>지우기</button>
     </section>
