@@ -10,14 +10,14 @@
 
 ## 0단계 — 기술 검증
 - [x] Node.js LTS, GitHub CLI 설치
-- [ ] GitHub CLI 로그인 (사용자가 직접)
-- [ ] git 저장소 초기화
+- [x] GitHub CLI 로그인 (사용자가 직접)
+- [x] git 저장소 초기화
 - [x] Vite + React + TypeScript 프로젝트 생성
 - [x] PWA 설정 (매니페스트, 아이콘, 서비스 워커)
 - [x] 검증용 화면 (TTS 한/영 버튼, 그리기 캔버스, 저장 테스트, 결과 복사)
 - [x] 로컬 빌드·서비스 확인
 - [x] GitHub Pages 배포 워크플로 작성
-- [ ] GitHub 공개 저장소 생성 + GitHub Pages 자동 배포
+- [x] GitHub 공개 저장소 생성 + GitHub Pages 자동 배포 (https://landlord7777.github.io/hangul-abc/)
 - [ ] 아이패드 홈 화면 설치 확인
 - [ ] 비행기 모드에서 실행 확인
 - [ ] 한국어·영어 TTS 동작 확인 ("그", "윽", "B, ball" 발음 품질 포함)

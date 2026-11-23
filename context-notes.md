@@ -63,6 +63,12 @@
 - **gh 권한** — 처음 로그인했을 때는 `workflow` 권한이 없었다. 이 권한이 없으면 `.github/workflows/` 파일을 올릴 때 거부되므로 `gh auth refresh -s workflow`로 추가했다.
 - **배포 워크플로** — actions 버전은 checkout@v5, setup-node@v5, configure-pages@v5, upload-pages-artifact@v4, deploy-pages@v4로 지정했다. 첫 실행에서 실패하면 로그를 보고 고친다.
 
+## 2026-11-24 — 첫 배포
+
+- 저장소 https://github.com/landlord7777/hangul-abc (공개), 앱 주소 https://landlord7777.github.io/hangul-abc/
+- Pages 빌드 방식은 GitHub Actions(`build_type=workflow`)로 API에서 켰다. 첫 실행은 성공(빌드 18초, 배포 17초).
+- 경고 — configure-pages@v5, upload-pages-artifact 내부의 upload-artifact, deploy-pages@v4가 Node.js 20 대상이라 Node 24로 강제 실행된다는 안내가 나왔다. 지금은 동작하므로 두고, 새 메이저 버전이 나오면 올린다.
+
 ## 참고 자료
 - 무료 Apple ID 7일 제한, Xcode Personal Team — https://adonaiohesed.github.io/posts/ios_sideloading/ , https://sideloadly.io/faq
 - iPadOS 26 홈 화면 웹앱 기본 동작 — https://heise.de/-10749652 , https://webkit.org/blog/17333/webkit-features-in-safari-26-0/
