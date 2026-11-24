@@ -130,6 +130,14 @@
 - **캐릭터 그림** — `캐릭터/`의 ChatGPT 그림 6장(각 1.2~2MB)을 400px로 줄여 `public/fairy/`에 넣는다. 원본 폴더는 git에서 제외한다. 얼굴 그림(배경 있는 정사각형)은 앱 아이콘으로 쓴다.
 - **글꼴** — 영어는 한 층짜리 a·g가 있는 Andika(OFL)를 `@fontsource/andika`로 앱에 넣는다(오프라인 동작). 한글은 기기 기본 글꼴(Apple SD Gothic Neo)을 쓴다.
 
+## 2026-11-24 — 1단계(MVP) 구현
+
+- **레벨 2 모음 축소** — 기본 모음 10개를 모두 쓰면 "텨", "쵸"처럼 아이에게 낯선 글자가 자주 나왔다. 레벨 2는 ㅏ ㅓ ㅗ ㅜ ㅡ ㅣ 6개만 쓴다. ㅑ ㅕ ㅛ ㅠ 글자는 레벨 1(자모)과 레벨 3(낱말 여우, 우유 등)에서 만난다.
+- **음성 선택 표시** — Safari는 음성 목록을 늦게 알려 줄 수 있다. 부모 메뉴의 선택 칸은 부모가 직접 고르기 전까지 매번 "실제로 쓰일 음성"을 계산해 보여준다. 선택하면 `settings.voice.ko` / `settings.voice.en`에 이름을 저장한다.
+- **기기 확인 화면** — `src/check/`는 지우지 않고 부모 메뉴 → "기기 확인 화면 열기"로 옮겼다. 펜슬 모드 토글을 계속 확인할 수 있다.
+- **확인 방법** — PC의 Edge를 헤드리스로 띄워 아이패드 크기(1080×810, 810×1080)로 홈 → 과목 → 세 활동 → 결과 → 부모 잠금 → 시간 소진 화면을 차례로 눌러 보고 스크린샷으로 확인했다. 콘솔 오류는 없었다. 소리와 실제 터치는 아이패드에서 확인해야 한다.
+- **npm audit** — 보통 등급 4건은 모두 빌드 도구(vite-plugin-pwa → workbox-build → minimatch)에서 나온다. 앱에 포함되지 않으므로 두고, 플러그인이 갱신되면 올린다.
+
 ## 참고 자료
 - 무료 Apple ID 7일 제한, Xcode Personal Team — https://adonaiohesed.github.io/posts/ios_sideloading/ , https://sideloadly.io/faq
 - iPadOS 26 홈 화면 웹앱 기본 동작 — https://heise.de/-10749652 , https://webkit.org/blog/17333/webkit-features-in-safari-26-0/

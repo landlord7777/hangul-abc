@@ -1,40 +1,133 @@
-// 0단계 기술 검증 화면 — 아이패드에서 웹앱 동작을 항목별로 확인한다
-import { useState } from 'react'
-import EnvCheck from './check/EnvCheck'
-import TtsCheck from './check/TtsCheck'
-import DrawCheck from './check/DrawCheck'
-import StorageCheck from './check/StorageCheck'
-import { reportText } from './check/report'
+// 앱 최상위 — 화면 전환, 하루 사용시간 측정, 진도 저장을 맡는다
+import { useEffect, useState } from 'react'
+import CheckScreen from './check/CheckScreen'
+import { LEVELS } from './content'
+import type { ActivityId, Subject } from './content/types'
+import { EMPTY_PROGRESS, actKey, record, type Progress } from './lib/progress'
+import { load, save } from './lib/storage'
+import { EMPTY_USAGE, addBonus, addSeconds, remainingSeconds, type Usage } from './lib/usage'
+import BuildLesson from './screens/BuildLesson'
+import CardLesson from './screens/CardLesson'
+import Home from './screens/Home'
+import Parent from './screens/Parent'
+import QuizLesson from './screens/QuizLesson'
+import Result from './screens/Result'
+import SubjectScreen from './screens/SubjectScreen'
+import TimeUp from './screens/TimeUp'
+
+type Lesson = { subject: Subject; level: number; act: ActivityId; run: number }
+type Screen =
+  | { name: 'home' }
+  | { name: 'subject'; subject: Subject }
+  | ({ name: 'lesson' } & Lesson)
+  | ({ name: 'result'; stars: number } & Lesson)
+  | { name: 'parent' }
+  | { name: 'check' }
+
+const LIMIT_KEY = 'settings.limitMin'
+const DEFAULT_LIMIT = 20
+const LESSONS = { A1: CardLesson, A2: QuizLesson, A3: BuildLesson }
 
 export default function App() {
-  const [text, setText] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [screen, setScreen] = useState<Screen>({ name: 'home' })
+  const [progress, setProgress] = useState<Progress>(() => load('progress', EMPTY_PROGRESS))
+  const [usage, setUsage] = useState<Usage>(() => load('usage', EMPTY_USAGE))
+  const [limitMin, setLimitMin] = useState(() => load(LIMIT_KEY, DEFAULT_LIMIT))
 
-  const makeReport = async () => {
-    const t = reportText()
-    setText(t)
-    try {
-      await navigator.clipboard.writeText(t)
-      setCopied(true)
-    } catch {
-      setCopied(false)
-    }
+  useEffect(() => {
+    void navigator.storage?.persist?.()
+  }, [])
+
+  // 앱이 화면에 보이고 부모 화면이 아닐 때만 1초씩 센다.
+  const counting = screen.name !== 'parent' && screen.name !== 'check'
+  useEffect(() => {
+    if (!counting) return
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return
+      setUsage((u) => {
+        const n = addSeconds(u, new Date(), 1)
+        save('usage', n)
+        return n
+      })
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [counting])
+
+  const updateUsage = (n: Usage) => {
+    setUsage(n)
+    save('usage', n)
   }
 
-  return (
-    <main>
-      <h1>🧚 반짝 한글 ABC — 기기 확인</h1>
-      <EnvCheck />
-      <TtsCheck />
-      <DrawCheck />
-      <StorageCheck />
-      <section>
-        <h2>5. 결과 보내기</h2>
-        <p>모든 확인이 끝나면 아래 버튼을 눌러 결과를 복사해서 전달해 주세요.</p>
-        <button onClick={makeReport}>결과 복사</button>
-        {copied && <span className="ok"> 복사했습니다</span>}
-        {text && <textarea readOnly value={text} />}
-      </section>
-    </main>
-  )
+  const startLesson = (subject: Subject, level: number, act: ActivityId) =>
+    setScreen({ name: 'lesson', subject, level, act, run: Date.now() })
+
+  const finish = (l: Lesson, correct: number, total: number) => {
+    const stars = l.act === 'A1' ? 1 : correct
+    const next = record(progress, actKey(l.subject, l.level, l.act), correct / total, stars)
+    setProgress(next)
+    save('progress', next)
+    setScreen({ ...l, name: 'result', stars })
+  }
+
+  if (screen.name === 'check') return <CheckScreen onBack={() => setScreen({ name: 'parent' })} />
+  if (screen.name === 'parent')
+    return (
+      <Parent
+        limitMin={limitMin}
+        usage={usage}
+        onLimit={(m) => {
+          setLimitMin(m)
+          save(LIMIT_KEY, m)
+        }}
+        onBonus={(m) => updateUsage(addBonus(usage, new Date(), m))}
+        onCheck={() => setScreen({ name: 'check' })}
+        onClose={() => setScreen({ name: 'home' })}
+      />
+    )
+
+  // 시간이 다 돼도 하던 학습과 결과 화면은 마저 보여주고, 그다음 화면부터 막는다.
+  const timeUp = remainingSeconds(usage, new Date(), limitMin) <= 0
+  if (timeUp && screen.name !== 'lesson' && screen.name !== 'result')
+    return <TimeUp onParent={() => setScreen({ name: 'parent' })} />
+
+  switch (screen.name) {
+    case 'home':
+      return (
+        <Home
+          stars={progress.stars}
+          onPick={(subject) => setScreen({ name: 'subject', subject })}
+          onParent={() => setScreen({ name: 'parent' })}
+        />
+      )
+    case 'subject':
+      return (
+        <SubjectScreen
+          subject={screen.subject}
+          progress={progress}
+          onBack={() => setScreen({ name: 'home' })}
+          onStart={(level, act) => startLesson(screen.subject, level, act)}
+        />
+      )
+    case 'lesson': {
+      const Activity = LESSONS[screen.act]
+      const level = LEVELS[screen.subject].find((lv) => lv.no === screen.level)!
+      return (
+        <Activity
+          key={screen.run}
+          subject={screen.subject}
+          level={level}
+          onExit={() => setScreen({ name: 'subject', subject: screen.subject })}
+          onFinish={(c, t) => finish(screen, c, t)}
+        />
+      )
+    }
+    case 'result':
+      return (
+        <Result
+          stars={screen.stars}
+          onAgain={() => startLesson(screen.subject, screen.level, screen.act)}
+          onBack={() => setScreen({ name: 'subject', subject: screen.subject })}
+        />
+      )
+  }
 }

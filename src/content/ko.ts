@@ -55,7 +55,8 @@ const JAMO: Jamo[] = [
 ]
 
 const C = CONSONANTS.map((c) => c[0])
-const V = VOWELS.map((v) => v[0])
+// 레벨 2는 "텨", "쵸"처럼 낯선 글자를 피하려고 기본 모음 6개만 쓴다.
+const V = ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ', 'ㅡ', 'ㅣ']
 const PAIRS = C.flatMap((c) => V.map((v) => [c, v] as const))
 const syl = (c: string, v: string) => compose(c, v)!
 const others = <T,>(list: readonly T[], not: T) => list.filter((x) => x !== not)
