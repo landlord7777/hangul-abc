@@ -1,4 +1,8 @@
 {
+  "en:A": "voice/en/pilot-01.wav",
+  "en:B": "voice/en/pilot-02.wav",
+  "en:B, ball": "voice/en/pilot-03.wav",
+  "en:cat": "voice/en/pilot-04.wav",
   "ko:가": "voice/ko/pilot-05.wav",
   "ko:그": "voice/ko/pilot-02.wav",
   "ko:기역": "voice/ko/pilot-01.wav",

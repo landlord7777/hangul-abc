@@ -156,6 +156,7 @@
 - **재생 방식** — `src/content/voices.json`에 "언어:문장" → 파일 경로를 적고, `speak()`가 문구마다 파일이 있으면 Web Audio로, 없으면 기기 음성으로 차례로 읽는다. iPad Safari는 터치 없이 새 오디오를 틀지 못하므로, 터치할 때마다 AudioContext를 깨운다. 무음 모드에서도 들리도록 지원되는 Safari에서는 `navigator.audioSession.type = 'playback'`을 쓴다.
 - **확인 화면** — 기기 확인 화면 6번 "더빙 음성"에서 더빙 파일과 같은 문장의 기기 음성(🤖)을 나란히 들을 수 있다.
 - **@types/node 추가** — 더빙 파일이 실제로 있는지 검사하는 테스트가 Node의 fs를 쓰기 때문이다.
+- **영어 다시 받음** — 사용자가 클립마다 무음을 넣고 줄 끝에 마침표를 붙였더니(`A.` `B.` `B, Ball.` `cat.`) 발음이 더 정확해졌다고 한다. 클립 사이 무음은 약 1.18초, "B, Ball."의 쉼표 쉼은 0.77초여서 기본값(0.65초)으로는 5개로 잘렸다. `--min-gap 1.0`으로 4줄이 맞았다. 앱의 짝짓기 기준은 대본 txt의 글자이고 Vrew에 넣은 글자는 쓰지 않으므로, 마침표·대소문자 차이는 상관없다. 한국어도 마침표가 도움이 되는지는 사용자가 확인 중이다.
 
 ## 참고 자료
 - 무료 Apple ID 7일 제한, Xcode Personal Team — https://adonaiohesed.github.io/posts/ios_sideloading/ , https://sideloadly.io/faq
