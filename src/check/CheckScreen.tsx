@@ -4,6 +4,7 @@ import EnvCheck from './EnvCheck'
 import TtsCheck from './TtsCheck'
 import DrawCheck from './DrawCheck'
 import StorageCheck from './StorageCheck'
+import DubCheck from './DubCheck'
 import { reportText } from './report'
 
 export default function CheckScreen({ onBack }: { onBack: () => void }) {
@@ -36,6 +37,7 @@ export default function CheckScreen({ onBack }: { onBack: () => void }) {
         {copied && <span className="ok"> 복사했습니다</span>}
         {text && <textarea readOnly value={text} />}
       </section>
+      <DubCheck />
     </main>
   )
 }

@@ -1,0 +1,13 @@
+{
+  "ko:가": "voice/ko/pilot-05.wav",
+  "ko:그": "voice/ko/pilot-02.wav",
+  "ko:기역": "voice/ko/pilot-01.wav",
+  "ko:나무": "voice/ko/pilot-07.wav",
+  "ko:다시 해볼까?": "voice/ko/pilot-10.wav",
+  "ko:르": "voice/ko/pilot-06.wav",
+  "ko:아": "voice/ko/pilot-04.wav",
+  "ko:으": "voice/ko/pilot-03.wav",
+  "ko:잘 듣고 맞는 것을 골라 봐.": "voice/ko/pilot-08.wav",
+  "ko:잘했어!": "voice/ko/pilot-09.wav",
+  "ko:잘했어! 별을 세 개 받았어.": "voice/ko/pilot-11.wav"
+}
