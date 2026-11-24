@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import CheckScreen from './check/CheckScreen'
 import { LEVELS } from './content'
+import { TRACE } from './content/trace'
 import type { ActivityId, Subject } from './content/types'
 import { EMPTY_PROGRESS, actKey, record, type Progress } from './lib/progress'
 import { load, save } from './lib/storage'
@@ -14,6 +15,7 @@ import QuizLesson from './screens/QuizLesson'
 import Result from './screens/Result'
 import SubjectScreen from './screens/SubjectScreen'
 import TimeUp from './screens/TimeUp'
+import TraceLesson from './screens/TraceLesson'
 
 type Lesson = { subject: Subject; level: number; act: ActivityId; run: number }
 type Screen =
@@ -109,16 +111,17 @@ export default function App() {
         />
       )
     case 'lesson': {
+      const onExit = () => setScreen({ name: 'subject', subject: screen.subject })
+      const onFinish = (c: number, t: number) => finish(screen, c, t)
+      // 따라 쓰기는 레벨 대신 낱말(1) / 문장(2) 묶음 번호를 쓴다.
+      if (screen.act === 'A5') {
+        const set = TRACE[screen.subject].find((s) => s.no === screen.level)!
+        return <TraceLesson key={screen.run} subject={screen.subject} set={set} onExit={onExit} onFinish={onFinish} />
+      }
       const Activity = LESSONS[screen.act]
       const level = LEVELS[screen.subject].find((lv) => lv.no === screen.level)!
       return (
-        <Activity
-          key={screen.run}
-          subject={screen.subject}
-          level={level}
-          onExit={() => setScreen({ name: 'subject', subject: screen.subject })}
-          onFinish={(c, t) => finish(screen, c, t)}
-        />
+        <Activity key={screen.run} subject={screen.subject} level={level} onExit={onExit} onFinish={onFinish} />
       )
     }
     case 'result':

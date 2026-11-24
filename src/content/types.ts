@@ -2,7 +2,7 @@
 export type Lang = 'ko' | 'en'
 export type Say = { text: string; lang: Lang }
 export type Subject = 'ko' | 'en'
-export type ActivityId = 'A1' | 'A2' | 'A3'
+export type ActivityId = 'A1' | 'A2' | 'A3' | 'A5'
 
 export const ko = (text: string): Say => ({ text, lang: 'ko' })
 export const en = (text: string): Say => ({ text, lang: 'en' })
@@ -47,6 +47,13 @@ export type Level = {
   build?: () => BuildTask[]
 }
 
+/** A5 따라 쓰기 한 개 */
+export type TraceItem = { text: string; emoji: string; say: Say[] }
+
+/** A5 따라 쓰기 묶음 (낱말 / 문장) */
+export type TraceSet = { no: number; icon: string; title: string; items: () => TraceItem[] }
+
 export const CARD_COUNT = 6
 export const QUIZ_COUNT = 8
 export const BUILD_COUNT = 5
+export const TRACE_COUNT = 5

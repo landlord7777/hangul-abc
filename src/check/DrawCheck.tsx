@@ -1,18 +1,7 @@
 // 손가락·펜슬로 글자를 따라 쓸 수 있는지 확인하는 카드 (펜슬 모드 / 손가락 모드 선택)
 import { useEffect, useRef, useState } from 'react'
+import { acceptPointer, loadMode, saveMode, type DrawMode } from '../lib/drawMode'
 import { setReport } from './report'
-
-// pen: 펜슬로만 쓰기(손바닥 무시), finger: 펜슬과 손가락 모두 쓰기
-type DrawMode = 'pen' | 'finger'
-const MODE_KEY = 'settings.drawMode'
-
-function loadMode(): DrawMode {
-  try {
-    return localStorage.getItem(MODE_KEY) === 'finger' ? 'finger' : 'pen'
-  } catch {
-    return 'pen'
-  }
-}
 
 export default function DrawCheck() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -25,11 +14,7 @@ export default function DrawCheck() {
 
   const chooseMode = (m: DrawMode) => {
     setMode(m)
-    try {
-      localStorage.setItem(MODE_KEY, m)
-    } catch {
-      // 저장 실패 시 이번 실행 동안만 적용된다.
-    }
+    saveMode(m)
   }
 
   const reset = () => {
@@ -60,10 +45,7 @@ export default function DrawCheck() {
 
   const onDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     setTypes((t) => (t.includes(e.pointerType) ? t : [...t, e.pointerType]))
-    // 펜슬 모드에서는 펜슬이 아닌 입력(손가락·손바닥)을 무시한다.
-    // 손가락 모드에서도 손 터치로 그리는 중에 펜슬이 오면 펜슬로 넘긴다.
-    const takeOver = e.pointerType === 'pen' && activeType.current !== 'pen'
-    if ((mode === 'pen' && e.pointerType !== 'pen') || (activeId.current !== null && !takeOver)) {
+    if (!acceptPointer(mode, e.pointerType, activeType.current)) {
       setIgnored((n) => n + 1)
       return
     }
