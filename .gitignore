@@ -5,3 +5,4 @@ dev-dist
 .claude/settings.local.json
 .env
 .env.*
+캐릭터/
