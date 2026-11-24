@@ -1,8 +1,8 @@
 // 활동 A2 — 소리를 듣고 보기 셋 중에서 맞는 글자를 고른다
+import { LINES } from '../content/lines'
 import { useEffect, useRef, useState } from 'react'
 import Fairy from '../components/Fairy'
 import LessonBar from '../components/LessonBar'
-import { ko } from '../content/types'
 import { speak } from '../lib/speech'
 import { NEXT_DELAY, fontClass, praise, type LessonProps } from './lesson'
 
@@ -16,7 +16,7 @@ export default function QuizLesson({ subject, level, onExit, onFinish }: LessonP
   const q = qs[i]
 
   useEffect(() => {
-    speak(i === 0 ? [ko('잘 듣고 맞는 것을 골라 봐.'), ...q.say] : q.say)
+    speak(i === 0 ? [...LINES.quizIntro, ...q.say] : q.say)
   }, [i, q])
   useEffect(() => () => window.clearTimeout(timer.current), [])
 
@@ -26,12 +26,12 @@ export default function QuizLesson({ subject, level, onExit, onFinish }: LessonP
       // 틀리면 정답을 반짝이고 다시 들려준다. 정답을 눌러야 넘어간다.
       setState('wrong')
       setWrong((w) => [...w, opt])
-      speak([ko('다시 해볼까?'), ...q.say])
+      speak([...LINES.retry, ...q.say])
       return
     }
     if (state === 'ask') correct.current++
     setState('right')
-    speak([ko(praise())])
+    speak([praise()])
     timer.current = window.setTimeout(() => {
       if (i + 1 < qs.length) {
         setI(i + 1)

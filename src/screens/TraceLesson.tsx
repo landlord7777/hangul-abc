@@ -1,8 +1,9 @@
 // 활동 A5 — 흐린 낱말·문장 위에 펜슬이나 손가락으로 따라 쓴다 (펜 색, 지우개, 모두 지우기, 펜슬/손가락 모드)
+import { LINES } from '../content/lines'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Fairy from '../components/Fairy'
 import LessonBar from '../components/LessonBar'
-import { ko, type Subject, type TraceSet } from '../content/types'
+import type { Subject, TraceSet } from '../content/types'
 import { acceptPointer, loadMode, saveMode, type DrawMode } from '../lib/drawMode'
 import { speak } from '../lib/speech'
 import { load, save } from '../lib/storage'
@@ -110,7 +111,7 @@ export default function TraceLesson({ subject, set, onExit, onFinish }: {
   }, [drawBoard, subject, item])
 
   useEffect(() => {
-    speak(i === 0 ? [ko('흐린 글자를 따라 써 봐.'), ...item.say] : item.say)
+    speak(i === 0 ? [...LINES.traceIntro, ...item.say] : item.say)
   }, [i, item])
   useEffect(() => () => window.clearTimeout(timer.current), [])
 
@@ -182,12 +183,12 @@ export default function TraceLesson({ subject, set, onExit, onFinish }: {
     if (!ok && state === 'write') {
       // 한 번은 더 써 보자고 하고, 그래도 다 썼다고 하면 별 없이 넘어간다.
       setState('nudge')
-      speak([ko('글자를 따라서 조금 더 써 볼까?')])
+      speak(LINES.traceMore)
       return
     }
     if (ok) correct.current++
     setState(ok ? 'right' : 'pass')
-    speak([ko(ok ? praise() : '좋아, 다음 거 해 보자!')])
+    speak(ok ? [praise()] : LINES.traceSkip)
     timer.current = window.setTimeout(() => {
       if (i + 1 < items.length) {
         setI(i + 1)
@@ -201,7 +202,7 @@ export default function TraceLesson({ subject, set, onExit, onFinish }: {
     const m = mode === 'pen' ? 'finger' : 'pen'
     setMode(m)
     saveMode(m)
-    speak([ko(m === 'pen' ? '펜슬로 써요.' : '손가락으로도 써요.')])
+    speak(m === 'pen' ? LINES.penOnly : LINES.fingerToo)
   }
 
   const pose = state === 'right' ? 'cheer' : state === 'nudge' ? 'think' : state === 'pass' ? 'wave' : 'fight'

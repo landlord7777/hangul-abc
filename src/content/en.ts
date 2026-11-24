@@ -26,6 +26,9 @@ const up = (l: string) => l.toUpperCase()
 const others = <T,>(list: readonly T[], not: T) => list.filter((x) => x !== not)
 const FIRST_SOUND = LETTERS.filter((l) => PHONICS[l][0].startsWith(l))
 
+/** 레벨 1~3에서 읽어 주는 모든 영어 문구 (더빙 대본용) */
+export const EN_PHRASES = [...LETTERS.map(up), ...LETTERS.map((l) => PHONICS[l][0]), ...CVC.map(([w]) => w)]
+
 export const EN_LEVELS: Level[] = [
   {
     no: 1,
@@ -50,7 +53,8 @@ export const EN_LEVELS: Level[] = [
     cards: () =>
       sample(LETTERS, CARD_COUNT).map((l) => {
         const [word, emoji] = PHONICS[l]
-        return { big: l, emoji, word, mark: word.indexOf(l), say: [en(`${up(l)}, ${word}`)] }
+        // "B" 다음 "ball"을 이어서 읽는다 (더빙 대본은 한 줄에 하나씩).
+        return { big: l, emoji, word, mark: word.indexOf(l), say: [en(up(l)), en(word)] }
       }),
     // 그림과 낱말 소리를 듣고 첫 글자를 고른다.
     quiz: () =>

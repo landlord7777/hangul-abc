@@ -108,7 +108,10 @@ def main():
     ap.add_argument('--min-len', type=float, default=0.1, help='이보다 짧은 소리는 잡음으로 버림(초)')
     a = ap.parse_args()
 
-    lines = [l.strip() for l in Path(a.script).read_text(encoding='utf-8-sig').splitlines() if l.strip()]
+    # Vrew용 글과 앱 문구가 다르면(예: 영어 끝 마침표) 같은 이름의 .keys.txt에 앱 문구가 있다.
+    script = Path(a.script)
+    keys = script.with_name(script.stem + '.keys.txt')
+    lines = [l.strip() for l in (keys if keys.exists() else script).read_text(encoding='utf-8-sig').splitlines() if l.strip()]
     sr, x = read_wav(Path(a.wav))
     segs = find_segments(x, sr, a.min_gap, a.min_len)
     print(f'{a.wav}: {len(x) / sr:.2f}초, 소리 덩어리 {len(segs)}개, 대본 {len(lines)}줄')

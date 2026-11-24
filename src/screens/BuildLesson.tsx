@@ -1,8 +1,8 @@
 // 활동 A3 — 블록을 눌러 보기와 같은 글자나 낱말을 만든다
+import { LINES } from '../content/lines'
 import { useEffect, useRef, useState } from 'react'
 import Fairy from '../components/Fairy'
 import LessonBar from '../components/LessonBar'
-import { ko } from '../content/types'
 import { compose } from '../lib/hangul'
 import { speak } from '../lib/speech'
 import { NEXT_DELAY, fontClass, praise, type LessonProps } from './lesson'
@@ -21,7 +21,7 @@ export default function BuildLesson({ subject, level, onExit, onFinish }: Lesson
   const placed = used.map((k) => t.blocks[k])
 
   useEffect(() => {
-    speak(i === 0 ? [ko('블록을 눌러서 똑같이 만들어 봐.'), ...t.say] : t.say)
+    speak(i === 0 ? [...LINES.buildIntro, ...t.say] : t.say)
   }, [i, t])
   useEffect(() => () => window.clearTimeout(timer.current), [])
 
@@ -34,7 +34,7 @@ export default function BuildLesson({ subject, level, onExit, onFinish }: Lesson
     if (next.map((x) => t.blocks[x]).join('') === t.pieces.join('')) {
       if (firstTry.current) correct.current++
       setState('right')
-      speak([ko(praise()), ...t.say])
+      speak([praise(), ...t.say])
       timer.current = window.setTimeout(() => {
         if (i + 1 < tasks.length) {
           setI(i + 1)
@@ -46,7 +46,7 @@ export default function BuildLesson({ subject, level, onExit, onFinish }: Lesson
     } else {
       firstTry.current = false
       setState('wrong')
-      speak([ko('다시 해볼까?')])
+      speak(LINES.retry)
       timer.current = window.setTimeout(() => {
         setUsed([])
         setState('ask')

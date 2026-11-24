@@ -9,3 +9,5 @@ dev-dist
 voice/*.wav
 voice/*.mp3
 voice/*.srt
+voice/full/*.wav
+voice/full/*.mp3

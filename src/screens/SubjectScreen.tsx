@@ -1,7 +1,8 @@
 // 과목 화면 — 레벨과 활동을 고르고, 잠긴 레벨과 최고 기록을 보여준다
+import { LINES } from '../content/lines'
 import { LEVELS } from '../content'
 import { TRACE } from '../content/trace'
-import { ko, type ActivityId, type Subject } from '../content/types'
+import type { ActivityId, Subject } from '../content/types'
 import { PASS, actKey, isUnlocked, type Progress } from '../lib/progress'
 import { speak } from '../lib/speech'
 import { fontClass } from './lesson'
@@ -57,7 +58,7 @@ export default function SubjectScreen({ subject, progress, onBack, onStart }: {
             <div
               key={lv.no}
               className={`level-card${open ? '' : ' locked'}`}
-              onClick={open ? undefined : () => speak([ko('앞 레벨을 먼저 해 보자!')])}
+              onClick={open ? undefined : () => speak(LINES.locked)}
             >
               <div className="level-head">
                 <span className="level-no">{open ? lv.no : '🔒'}</span>

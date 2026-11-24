@@ -61,6 +61,15 @@ const PAIRS = C.flatMap((c) => V.map((v) => [c, v] as const))
 const syl = (c: string, v: string) => compose(c, v)!
 const others = <T,>(list: readonly T[], not: T) => list.filter((x) => x !== not)
 
+/** 레벨 1~3에서 읽어 주는 모든 한국어 문구 (더빙 대본용) */
+export const KO_PHRASES = [
+  ...JAMO.map((m) => m.name),
+  ...JAMO.map((m) => m.sound),
+  ...JAMO.map((m) => m.word).filter(Boolean),
+  ...PAIRS.map(([c, v]) => syl(c, v)),
+  ...WORDS.map(([w]) => w),
+]
+
 export const KO_LEVELS: Level[] = [
   {
     no: 1,
