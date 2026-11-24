@@ -6,3 +6,6 @@ dev-dist
 .env
 .env.*
 캐릭터/
+voice/*.wav
+voice/*.mp3
+voice/*.srt
