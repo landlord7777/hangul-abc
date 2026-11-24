@@ -104,6 +104,12 @@
 - **Qwen3-TTS (0.6B, CPU float32)** — 한 개에 14~165초 걸렸다. 한 글자 입력에서 말을 끝내지 못하는 문제가 있다("윽" 8.7초, Sohee의 영어 "B" 9.1초). 이 엔진을 고르면 길이 제한이나 다른 문장 형태가 필요하다.
 - **MeloTTS (Windows 비공식)** — 한국어 발음 변환기 g2pkk가 Windows에서는 eunjeon(C++ 빌드 필요)을 요구한다. 그래서 python-mecab-ko를 `tts-work\mecabko`에 따로 설치하고, 그 안에 `eunjeon.py` 연결 모듈을 두었다. melo 가상환경의 `mecabko.pth`가 이 경로를 가리킨다. 같은 폴더에 설치하면 Windows가 대소문자를 구분하지 않아 일본어용 `MeCab`과 한국어용 `mecab` 폴더가 섞여 깨지므로 반드시 분리한다. 모델을 불러오는 첫 낱말은 40~50초, 나머지는 1~2초 걸렸다. 소리 길이는 모두 정상이었다.
 
+## 2026-11-24 — 기기 음성으로 확정, TTS 환경 삭제
+
+- **결정** — 사용자가 세 엔진의 샘플을 들어본 뒤 "만드는 노력과 시간을 고려하면 기기 음성이 낫다"고 했다. 앱은 Web Speech API(기기 음성)만 쓴다. 음성 품질은 부모 모드에서 기기에 있는 음성(향상됨·프리미엄 포함)과 속도를 고르는 방식으로 보완한다.
+- **삭제한 것** — 저장소의 `tools/tts/`, `public/voice-samples/`, 확인 화면의 "AI 음성 비교" 카드. PC에서는 `C:\Users\1\tts-work` 전체(가상환경, 모델 캐시, MeloTTS 소스, mecab), MeloTTS가 받은 `~/.cache/huggingface`와 `AppData\Roaming\nltk_data`, uv가 설치한 Python 3.10·3.12(레지스트리 등록 포함, `uv python uninstall --all`로 제거), uv 캐시, uv 자체(`pip uninstall uv`).
+- 다시 AI 음성이 필요해지면 위 "오픈소스 TTS 설치와 샘플 생성 결과" 기록과 git 기록(커밋 e0806db)을 참고한다.
+
 ## 참고 자료
 - 무료 Apple ID 7일 제한, Xcode Personal Team — https://adonaiohesed.github.io/posts/ios_sideloading/ , https://sideloadly.io/faq
 - iPadOS 26 홈 화면 웹앱 기본 동작 — https://heise.de/-10749652 , https://webkit.org/blog/17333/webkit-features-in-safari-26-0/
