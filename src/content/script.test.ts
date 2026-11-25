@@ -15,7 +15,8 @@ function everySay(): Say[] {
     for (const levels of Object.values(LEVELS))
       for (const lv of levels) {
         for (const c of lv.cards()) says.push(...c.say)
-        for (const q of lv.quiz()) says.push(...q.say)
+        const quizzes = [lv.quiz, ...Object.values(lv.extra ?? {})]
+        for (const make of quizzes) for (const q of make()) says.push(...q.say, ...(q.after ?? []))
         for (const t of lv.build?.() ?? []) says.push(...t.say)
       }
     for (const sets of Object.values(TRACE)) for (const s of sets) for (const i of s.items()) says.push(...i.say)

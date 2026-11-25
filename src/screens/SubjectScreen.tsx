@@ -12,6 +12,9 @@ const ACTS: Record<ActivityId, { icon: string; label: string }> = {
   A2: { icon: '👂', label: '듣고 고르기' },
   A3: { icon: '🧩', label: '만들기' },
   A5: { icon: '✏️', label: '따라 쓰기' },
+  A7: { icon: '📝', label: '낱말 퀴즈' },
+  A8: { icon: '🔗', label: '소리 합치기' },
+  A9: { icon: '🔍', label: '헷갈리는 글자' },
 }
 
 const bestMark = (act: ActivityId, best: number) => (act === 'A1' ? '✔️' : best >= PASS ? '⭐' : `${Math.round(best * 100)}%`)

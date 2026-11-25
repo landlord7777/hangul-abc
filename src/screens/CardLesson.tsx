@@ -1,41 +1,23 @@
 // 활동 A1 — 카드를 넘기며 글자와 그림을 보고 소리를 듣는다
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Fairy from '../components/Fairy'
 import LessonBar from '../components/LessonBar'
 import { speak } from '../lib/speech'
 import { fontClass, type LessonProps } from './lesson'
 
-const SPELL_STEP = 500
-
 export default function CardLesson({ subject, level, onExit, onFinish }: LessonProps) {
   const [cards] = useState(level.cards)
   const [i, setI] = useState(0)
-  const [lit, setLit] = useState(-1) // 반짝이는 글자 위치, 글자 수와 같으면 전체
-  const timers = useRef<number[]>([])
+  // 지금 읽는 문구 번호. 글자 하나씩 읽는 카드(spell)와 소리 합치기 카드(blend)는 이 번호로 글자를 반짝인다.
+  const [lit, setLit] = useState(-1)
   const card = cards[i]
 
   const play = useCallback(() => {
-    timers.current.forEach(clearTimeout)
-    timers.current = []
     setLit(-1)
-    if (!card.spell) {
-      speak(card.say)
-      return
-    }
-    const n = card.big.length
-    for (let k = 0; k < n; k++) timers.current.push(window.setTimeout(() => setLit(k), k * SPELL_STEP))
-    timers.current.push(
-      window.setTimeout(() => {
-        setLit(n)
-        speak(card.say)
-      }, n * SPELL_STEP),
-    )
+    speak(card.say, setLit)
   }, [card])
 
-  useEffect(() => {
-    play()
-    return () => timers.current.forEach(clearTimeout)
-  }, [play])
+  useEffect(play, [play])
 
   const next = () => (i + 1 < cards.length ? setI(i + 1) : onFinish(1, 1))
   const font = fontClass(subject)
@@ -52,9 +34,16 @@ export default function CardLesson({ subject, level, onExit, onFinish }: LessonP
                     {ch}
                   </span>
                 ))
-              : card.big}
+              : <span className={card.blend && lit === 2 ? 'lit' : ''}>{card.big}</span>}
           </div>
-          {card.sub && <div className="card-sub">{card.sub}</div>}
+          {card.blend ? (
+            <div className="card-sub">
+              <span className={lit === 0 ? 'lit' : ''}>{card.blend[0]}</span> +{' '}
+              <span className={lit === 1 ? 'lit' : ''}>{card.blend[1]}</span>
+            </div>
+          ) : (
+            card.sub && <div className="card-sub">{card.sub}</div>
+          )}
           {card.emoji && (
             <div className="card-pic">
               <span className="emoji">{card.emoji}</span>

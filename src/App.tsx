@@ -28,7 +28,7 @@ type Screen =
 
 const LIMIT_KEY = 'settings.limitMin'
 const DEFAULT_LIMIT = 20
-const LESSONS = { A1: CardLesson, A2: QuizLesson, A3: BuildLesson }
+const LESSONS = { A1: CardLesson, A2: QuizLesson, A3: BuildLesson, A7: QuizLesson, A8: QuizLesson, A9: QuizLesson }
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
@@ -121,7 +121,14 @@ export default function App() {
       const Activity = LESSONS[screen.act]
       const level = LEVELS[screen.subject].find((lv) => lv.no === screen.level)!
       return (
-        <Activity key={screen.run} subject={screen.subject} level={level} onExit={onExit} onFinish={onFinish} />
+        <Activity
+          key={screen.run}
+          subject={screen.subject}
+          level={level}
+          act={screen.act}
+          onExit={onExit}
+          onFinish={onFinish}
+        />
       )
     }
     case 'result':

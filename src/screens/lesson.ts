@@ -1,11 +1,12 @@
 // 세 가지 활동 화면이 함께 쓰는 props 타입과 칭찬 문구
 import { PRAISE } from '../content/lines'
-import type { Level, Subject } from '../content/types'
+import type { ActivityId, Level, Subject } from '../content/types'
 import { pick } from '../lib/random'
 
 export type LessonProps = {
   subject: Subject
   level: Level
+  act: ActivityId
   onExit: () => void
   onFinish: (correct: number, total: number) => void
 }

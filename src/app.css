@@ -768,3 +768,29 @@
     grid-template-columns: repeat(6, 44px);
   }
 }
+
+/* 낱말 퀴즈: 그림 아래 빈칸 있는 낱말 */
+.prompt.with-text {
+  flex-direction: column;
+  gap: 4px;
+  font-size: 96px;
+}
+
+.prompt-text {
+  font-size: 64px;
+  color: #4a2b3f;
+  letter-spacing: 2px;
+}
+
+.prompt-text .blank {
+  display: inline-block;
+  min-width: 0.9em;
+  margin: 0 4px;
+  border-bottom: 6px solid var(--pink);
+}
+
+/* 소리 합치기 카드: 조각(ㄴ + ㅏ)을 차례로 반짝인다 */
+.card-sub .lit {
+  color: #ffa000;
+  text-shadow: 0 0 12px #ffe08a;
+}

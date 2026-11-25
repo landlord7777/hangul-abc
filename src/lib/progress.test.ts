@@ -24,3 +24,11 @@ it('앞 레벨의 퀴즈 활동이 모두 80% 이상이어야 열린다 (A1은 �
   expect(isUnlocked(p, 'ko', 3, [...acts])).toBe(true)
   expect(isUnlocked(p, 'en', 3, [...acts])).toBe(false)
 })
+
+it('나중에 더한 활동(A7~A9)은 잠금 조건에 넣지 않는다 (이미 연 레벨이 다시 잠기지 않게)', () => {
+  let p = record(EMPTY_PROGRESS, actKey('ko', 1, 'A2'), 1, 0)
+  expect(isUnlocked(p, 'ko', 2, ['A1', 'A2', 'A9'])).toBe(true)
+  p = record(p, actKey('ko', 2, 'A2'), 1, 0)
+  p = record(p, actKey('ko', 2, 'A3'), 1, 0)
+  expect(isUnlocked(p, 'ko', 3, ['A1', 'A2', 'A3', 'A8', 'A9'])).toBe(true)
+})
