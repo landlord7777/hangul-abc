@@ -2,7 +2,7 @@
 import { EN_PHRASES } from './en'
 import { KO_PHRASES } from './ko'
 import { LINES, MAX_STARS, PRAISE, starLine } from './lines'
-import { EN_SENTENCES, EN_WORDS, KO_SENTENCES, KO_WORDS } from './trace'
+import { EN_SENTENCES, EN_WORDS, KO_SENTENCES, KO_TEENIEPING, KO_WORDS } from './trace'
 import type { Lang, Say } from './types'
 
 export function scriptPhrases(): Record<Lang, string[]> {
@@ -17,7 +17,7 @@ export function scriptPhrases(): Record<Lang, string[]> {
   }
   for (const s of says) add(s.lang, s.text)
   for (const t of KO_PHRASES) add('ko', t)
-  for (const [t] of [...KO_WORDS, ...KO_SENTENCES]) add('ko', t)
+  for (const [t] of [...KO_WORDS, ...KO_SENTENCES, ...KO_TEENIEPING]) add('ko', t)
   for (const t of EN_PHRASES) add('en', t)
   for (const [t] of [...EN_WORDS, ...EN_SENTENCES]) add('en', t)
   return out
