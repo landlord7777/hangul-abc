@@ -11,3 +11,4 @@ voice/*.mp3
 voice/*.srt
 voice/full/*.wav
 voice/full/*.mp3
+voice/full/*.srt

@@ -5,6 +5,8 @@
 
 - 대본 한 줄 = 소리 덩어리 하나. 클립 사이 무음(기본 0.65초 이상)으로 자르고,
   0.1초보다 짧은 잡음은 버린다. 덩어리 수가 대본 줄 수와 다르면 아무것도 쓰지 않고 멈춘다.
+- WAV와 같은 이름의 .srt(Vrew 자막)가 있으면 무음 대신 자막 시간으로 자른다. 자막 경계는 앞뒤
+  0.15초 안의 가장 조용한 곳으로 옮기고, 그곳도 조용하지 않으면(줄이 합쳐져 읽힌 경우) 멈춘다.
 - 결과: public/voice/<lang>/<이름>-NN.wav (24kHz 모노 16bit), src/content/voices.json 갱신
   (같은 이름으로 만든 이전 항목은 지우고 새로 쓴다)
 """
@@ -12,6 +14,7 @@ import argparse
 import array
 import json
 import math
+import re
 import struct
 import wave
 from pathlib import Path
@@ -49,9 +52,49 @@ def read_wav(path: Path):
     return sr, a
 
 
+def frame_rms(x, sr):
+    win = int(sr * WIN)
+    return [math.sqrt(sum(v * v for v in x[i:i + win]) / win) for i in range(0, len(x) - win, win)]
+
+
+def read_srt(path: Path):
+    """Vrew 자막에서 (시작초, 끝초, 글) 목록을 읽는다."""
+    t = lambda h, m, s, ms: int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000
+    pat = r'(\d+):(\d\d):(\d\d)[,.](\d+) --> (\d+):(\d\d):(\d\d)[,.](\d+)[^\n]*\n(.*?)(?:\n\s*\n|\Z)'
+    text = path.read_text(encoding='utf-8-sig').replace('\r\n', '\n').strip() + '\n\n'
+    return [(t(*m[0:4]), t(*m[4:8]), ' '.join(m[8].split())) for m in re.findall(pat, text, re.S)]
+
+
+def srt_segments(x, sr, entries):
+    """자막 경계를 가장 조용한 곳으로 옮기고, 경계 사이에서 소리가 있는 부분을 (시작, 끝) 표본 위치로 돌려준다."""
+    rms = frame_rms(x, sr)
+    thr = max(rms) * 0.02
+    n = len(rms)
+    reach = round(0.15 / WIN)
+    cuts, bad = [0], []
+    for k, (s, _, text) in enumerate(entries[1:], 2):
+        c = round(s / WIN)
+        lo, hi = max(cuts[-1] + 1, c - reach), min(n - 1, c + reach)
+        best = min(range(lo, hi + 1), key=lambda i: rms[i])
+        if rms[best] > thr:
+            bad.append(f'{k}번 "{text}" 앞 {s:.2f}초 근처에 쉬는 곳이 없음')
+        cuts.append(best)
+    cuts.append(n)
+    if bad:
+        raise SystemExit('자막 경계가 소리 중간에 있습니다 (앞 줄과 이어서 읽힌 것 같음).\n  ' + '\n  '.join(bad))
+    segs = []
+    for a, b in zip(cuts, cuts[1:]):
+        loud = [i for i in range(a, b) if rms[i] > thr]
+        if not loud:
+            raise SystemExit(f'{len(segs) + 1}번 자막 구간에 소리가 없습니다.')
+        segs.append((loud[0], loud[-1] + 1, a, b))
+    win = int(sr * WIN)
+    return [(s * win, e * win, a * win, b * win) for s, e, a, b in segs]
+
+
 def find_segments(x, sr, min_gap, min_len):
     win = int(sr * WIN)
-    rms = [math.sqrt(sum(v * v for v in x[i:i + win]) / win) for i in range(0, len(x) - win, win)]
+    rms = frame_rms(x, sr)
     thr = max(rms) * 0.02
     # 1) 0.2초 무음으로 잘게 나눈 뒤 짧은 잡음을 버린다.
     segs, start, quiet = [], None, 0
@@ -75,12 +118,13 @@ def find_segments(x, sr, min_gap, min_len):
             merged[-1] = (merged[-1][0], e)
         else:
             merged.append((s, e))
-    return [(s * win, e * win) for s, e in merged]
+    return [(s * win, e * win, 0, len(x)) for s, e in merged]
 
 
-def write_clip(path: Path, x, sr, s, e):
+def write_clip(path: Path, x, sr, s, e, lo, hi):
+    """s~e 소리에 앞뒤 여유를 붙여 쓴다. 여유는 lo~hi(이웃 클립 경계)를 넘지 않는다."""
     pad = int(sr * PAD)
-    clip = list(x[max(0, s - pad):min(len(x), e + pad)])
+    clip = list(x[max(0, lo, s - pad):min(len(x), hi, e + pad)])
     f = int(sr * FADE)
     for k in range(min(f, len(clip))):
         clip[k] *= k / f
@@ -113,9 +157,21 @@ def main():
     keys = script.with_name(script.stem + '.keys.txt')
     lines = [l.strip() for l in (keys if keys.exists() else script).read_text(encoding='utf-8-sig').splitlines() if l.strip()]
     sr, x = read_wav(Path(a.wav))
-    segs = find_segments(x, sr, a.min_gap, a.min_len)
+    srt = Path(a.wav).with_suffix('.srt')
+    if srt.exists():
+        entries = read_srt(srt)
+        said = [l.strip() for l in script.read_text(encoding='utf-8-sig').splitlines() if l.strip()]
+        if len(entries) != len(lines):
+            raise SystemExit(f'자막 {len(entries)}개와 대본 {len(lines)}줄의 수가 달라 멈춥니다.')
+        diff = [f'{k}번 대본 "{w}" / 자막 "{t}"' for k, (w, (_, _, t)) in enumerate(zip(said, entries), 1) if w.rstrip('.') != t.rstrip('.')]
+        if diff:
+            raise SystemExit('자막 글이 대본과 달라 멈춥니다.\n  ' + '\n  '.join(diff))
+        print(f'{srt.name} 자막 시간으로 자릅니다.')
+        segs = srt_segments(x, sr, entries)
+    else:
+        segs = find_segments(x, sr, a.min_gap, a.min_len)
     print(f'{a.wav}: {len(x) / sr:.2f}초, 소리 덩어리 {len(segs)}개, 대본 {len(lines)}줄')
-    for k, (s, e) in enumerate(segs):
+    for k, (s, e, _, _) in enumerate(segs):
         print(f'  {k + 1:2}. {s / sr:6.2f} - {e / sr:6.2f}  {lines[k] if k < len(lines) else "(대본에 없음)"}')
     if len(segs) != len(lines):
         raise SystemExit('덩어리 수와 대본 줄 수가 달라 멈춥니다. --min-gap 값을 바꾸거나 녹음을 확인하세요.')
@@ -127,9 +183,9 @@ def main():
     index = json.loads(index_path.read_text(encoding='utf-8')) if index_path.exists() else {}
     prefix = f'voice/{a.lang}/{a.name}-'
     index = {k: v for k, v in index.items() if not v.startswith(prefix)}
-    for k, ((s, e), text) in enumerate(zip(segs, lines), 1):
+    for k, ((s, e, lo, hi), text) in enumerate(zip(segs, lines), 1):
         rel = f'{prefix}{k:02}.wav'
-        write_clip(ROOT / 'public' / rel, x, sr, s, e)
+        write_clip(ROOT / 'public' / rel, x, sr, s, e, lo, hi)
         index[f'{a.lang}:{text}'] = rel
     index_path.write_text(json.dumps(dict(sorted(index.items())), ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(f'{len(lines)}개 파일을 {out_dir}에 쓰고 {index_path.name}을 갱신했습니다.')
