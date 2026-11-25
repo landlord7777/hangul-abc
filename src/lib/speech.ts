@@ -75,49 +75,48 @@ function stop() {
   playing = null
 }
 
-/** 기기 음성으로 여러 문구를 한꺼번에 줄 세우고, 마지막이 끝나면 done을 부른다. */
-function tts(parts: Say[], done: () => void) {
+const GAP_MS = 400 // 문구 사이 쉼 (더빙 클립은 앞뒤가 짧게 잘려 있어 그냥 이으면 붙어 들린다)
+
+/** 기기 음성으로 문구 하나를 읽고, 끝나면 done을 부른다. */
+function tts(part: Say, done: () => void) {
   if (!hasTts) return done()
-  const rate = load<number>(RATE_KEY, DEFAULT_RATE)
-  parts.forEach((p, k) => {
-    const u = new SpeechSynthesisUtterance(p.text)
-    u.lang = LOCALE[p.lang]
-    u.rate = rate
-    const v = chooseVoice(p.lang)
-    if (v) u.voice = v
-    if (k === parts.length - 1) u.onend = done
-    speechSynthesis.speak(u)
-  })
+  const u = new SpeechSynthesisUtterance(part.text)
+  u.lang = LOCALE[part.lang]
+  u.rate = load<number>(RATE_KEY, DEFAULT_RATE)
+  const v = chooseVoice(part.lang)
+  if (v) u.voice = v
+  u.onend = done
+  speechSynthesis.speak(u)
 }
 
-async function playFrom(parts: Say[], i: number, my: number) {
+type OnPart = (index: number) => void
+
+async function playFrom(parts: Say[], i: number, my: number, onPart?: OnPart) {
   if (i >= parts.length || my !== run) return
-  const file = dubbedFile(parts[i])
-  if (!file) {
-    // 이어지는 기기 음성 문구는 한 번에 넘긴다.
-    let j = i
-    while (j < parts.length && !dubbedFile(parts[j])) j++
-    tts(parts.slice(i, j), () => void playFrom(parts, j, my))
-    return
+  const next = () => {
+    if (i + 1 < parts.length) window.setTimeout(() => void playFrom(parts, i + 1, my, onPart), GAP_MS)
   }
+  const file = dubbedFile(parts[i])
+  onPart?.(i)
+  if (!file) return tts(parts[i], next)
   try {
     const buf = await buffer(file)
     if (my !== run) return
     const src = audio().createBufferSource()
     src.buffer = buf
     src.connect(audio().destination)
-    src.onended = () => void playFrom(parts, i + 1, my)
+    src.onended = next
     playing = src
     src.start()
   } catch {
     // 파일을 못 읽으면 이 문구만 기기 음성으로 읽는다.
-    tts([parts[i]], () => void playFrom(parts, i + 1, my))
+    tts(parts[i], next)
   }
 }
 
-/** 앞서 읽던 것을 멈추고 문구들을 차례로 읽는다. */
-export function speak(parts: Say[]) {
+/** 앞서 읽던 것을 멈추고 문구들을 차례로 읽는다. 문구 사이에는 잠깐 쉰다. onPart는 각 문구를 읽기 시작할 때 불린다. */
+export function speak(parts: Say[], onPart?: OnPart) {
   const my = ++run
   stop()
-  void playFrom(parts, 0, my)
+  void playFrom(parts, 0, my, onPart)
 }
