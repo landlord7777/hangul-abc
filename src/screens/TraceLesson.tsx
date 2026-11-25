@@ -10,6 +10,12 @@ import { load, save } from '../lib/storage'
 import { NEXT_DELAY, praise } from './lesson'
 
 const COLORS = ['#ff4fa0', '#a35cff', '#ff3b30', '#ff9500', '#2fb350', '#1e88ff', '#4a2b3f']
+// 🎨 색 판: 12가지 색 × 4단계 밝기 + 검정·회색·갈색 계열
+const HUES = [0, 20, 40, 55, 90, 140, 175, 200, 225, 260, 290, 320]
+const PALETTE = [
+  ...[82, 66, 50, 36].flatMap((l) => HUES.map((h) => `hsl(${h}, 90%, ${l}%)`)),
+  ...['#000000', '#555555', '#999999', '#8b5a2b', '#c68642', '#f1c27d'],
+]
 const COLOR_KEY = 'settings.penColor'
 const PASS_COVER = 0.3 // 흐린 글자 중 이만큼을 덮으면 별
 const SAMPLE_STEP = 3 // 덮은 정도를 잴 때 몇 px마다 볼지 (CSS px)
@@ -30,6 +36,7 @@ export default function TraceLesson({ subject, set, onExit, onFinish }: {
   const [i, setI] = useState(0)
   const [color, setColor] = useState(() => load(COLOR_KEY, COLORS[0]))
   const [eraser, setEraser] = useState(false)
+  const [palette, setPalette] = useState(false)
   const [mode, setMode] = useState<DrawMode>(loadMode)
   const [state, setState] = useState<State>('write')
   const boardRef = useRef<HTMLDivElement>(null)
@@ -198,6 +205,13 @@ export default function TraceLesson({ subject, set, onExit, onFinish }: {
     }, NEXT_DELAY)
   }
 
+  const pickColor = (c: string) => {
+    setColor(c)
+    save(COLOR_KEY, c)
+    setEraser(false)
+    setPalette(false)
+  }
+
   const toggleMode = () => {
     const m = mode === 'pen' ? 'finger' : 'pen'
     setMode(m)
@@ -223,13 +237,17 @@ export default function TraceLesson({ subject, set, onExit, onFinish }: {
                 className={`swatch${!eraser && c === color ? ' on' : ''}`}
                 style={{ background: c }}
                 aria-label="펜 색"
-                onClick={() => {
-                  setColor(c)
-                  save(COLOR_KEY, c)
-                  setEraser(false)
-                }}
+                onClick={() => pickColor(c)}
               />
             ))}
+            <button
+              className={`swatch palette-btn${!eraser && !COLORS.includes(color) ? ' on' : ''}`}
+              style={COLORS.includes(color) ? undefined : { background: color }}
+              aria-label="색 판"
+              onClick={() => setPalette(true)}
+            >
+              🎨
+            </button>
             <button className={`tool${eraser ? ' on' : ''}`} onClick={() => setEraser(true)}>
               🧽 지우개
             </button>
@@ -255,6 +273,37 @@ export default function TraceLesson({ subject, set, onExit, onFinish }: {
           ✔️ 다 썼어
         </button>
       </div>
+      {palette && (
+        <div className="palette-back" onClick={() => setPalette(false)}>
+          <div className="palette" onClick={(e) => e.stopPropagation()}>
+            <div className="palette-grid">
+              {PALETTE.map((c) => (
+                <button
+                  key={c}
+                  className={`swatch${!eraser && c === color ? ' on' : ''}`}
+                  style={{ background: c }}
+                  aria-label="펜 색"
+                  onClick={() => pickColor(c)}
+                />
+              ))}
+            </div>
+            <div className="palette-foot">
+              {/* 기기의 색 고르기 창 (원하는 색을 마음대로) */}
+              <label className="tool">
+                🌈 더 많은 색
+                <input
+                  type="color"
+                  value={color.startsWith('#') ? color : '#ff4fa0'}
+                  onChange={(e) => pickColor(e.target.value)}
+                />
+              </label>
+              <button className="tool" onClick={() => setPalette(false)}>
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
