@@ -150,6 +150,7 @@ def main():
     ap.add_argument('name')
     ap.add_argument('--min-gap', type=float, default=0.65, help='클립을 나누는 최소 무음(초)')
     ap.add_argument('--min-len', type=float, default=0.1, help='이보다 짧은 소리는 잡음으로 버림(초)')
+    ap.add_argument('--no-srt', action='store_true', help='.srt가 있어도 무음으로 자름 (자막 시간이 소리와 안 맞을 때)')
     a = ap.parse_args()
 
     # Vrew용 글과 앱 문구가 다르면(예: 영어 끝 마침표) 같은 이름의 .keys.txt에 앱 문구가 있다.
@@ -158,7 +159,7 @@ def main():
     lines = [l.strip() for l in (keys if keys.exists() else script).read_text(encoding='utf-8-sig').splitlines() if l.strip()]
     sr, x = read_wav(Path(a.wav))
     srt = Path(a.wav).with_suffix('.srt')
-    if srt.exists():
+    if srt.exists() and not a.no_srt:
         entries = read_srt(srt)
         said = [l.strip() for l in script.read_text(encoding='utf-8-sig').splitlines() if l.strip()]
         if len(entries) != len(lines):
