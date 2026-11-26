@@ -227,3 +227,10 @@
 - 무료 Apple ID 7일 제한, Xcode Personal Team — https://adonaiohesed.github.io/posts/ios_sideloading/ , https://sideloadly.io/faq
 - iPadOS 26 홈 화면 웹앱 기본 동작 — https://heise.de/-10749652 , https://webkit.org/blog/17333/webkit-features-in-safari-26-0/
 - iOS PWA 지원 범위 — https://firt.dev/notes/pwa-ios/
+
+## 2026-11-26 — 짧은 소리가 너무 빠르다 (시험 대본)
+
+- **문제** — 사용자: ㄱ, ㄴ, ㄷ 같은 자모가 너무 빨리 나와 듣기 어렵다. "ㄱ" 대신 "기역"처럼 적어 더빙하자고 제안.
+- **확인** — 대본은 이미 "기역", "니은"으로 적혀 있다(ko-01 31~44줄). 문제는 글이 아니라 길이다. 자른 클립이 기역 0.47초, 그 0.49초, 아 0.47초, 가 0.45초, 영어 A 0.28초다(앞뒤 여백 포함).
+- **결정** — 바로 전체를 다시 만들지 않고, 글 바꾸는 방식 몇 가지를 작은 시험 대본(voice/test-slow-ko.txt 18줄, test-slow-en.txt 12줄)으로 먼저 들어 본다. 한국어는 `~` 붙이기, 쉼표, 소리 늘이기(그으). 영어는 알파벳을 소리 나는 대로(ay, bee …) 적기.
+- **이후** — 고른 방식을 make-script.mjs의 "읽을 글 바꾸기" 표로 넣고, 해당 줄만 새 번호 대본으로 만든다. 앱 문구(키)는 그대로 두고 .keys.txt로 짝을 맞춘다. ko-06, en-03 더빙은 이 결과를 보고 함께 한다.
