@@ -88,10 +88,15 @@ def srt_segments(x, sr, entries, dip=False):
     for a, b in zip(cuts, cuts[1:]):
         loud = [i for i in range(a, b) if rms[i] > thr]
         if not loud:
-            raise SystemExit(f'{len(segs) + 1}번 자막 구간에 소리가 없습니다.')
+            if not dip:
+                raise SystemExit(f'{len(segs) + 1}번 자막 구간에 소리가 없습니다.')
+            # 그 줄만 빼고 나머지를 쓴다. 빠진 줄은 음성 파일이 없어 앱이 기기 음성으로 읽는다.
+            print(f'  ! {len(segs) + 1}번 자막 구간에 소리가 없어 이 줄은 건너뜁니다 (기기 음성).')
+            segs.append(None)
+            continue
         segs.append((loud[0], loud[-1] + 1, a, b))
     win = int(sr * WIN)
-    return [(s * win, e * win, a * win, b * win) for s, e, a, b in segs]
+    return [g and tuple(v * win for v in g) for g in segs]
 
 
 def find_segments(x, sr, min_gap, min_len):
@@ -153,7 +158,8 @@ def main():
     ap.add_argument('--min-gap', type=float, default=0.65, help='클립을 나누는 최소 무음(초)')
     ap.add_argument('--min-len', type=float, default=0.1, help='이보다 짧은 소리는 잡음으로 버림(초)')
     ap.add_argument('--no-srt', action='store_true', help='.srt가 있어도 무음으로 자름 (자막 시간이 소리와 안 맞을 때)')
-    ap.add_argument('--dip', action='store_true', help='자막 경계 근처에 쉬는 곳이 없으면 멈추지 않고 가장 조용한 곳에서 자름')
+    ap.add_argument('--dip', action='store_true', help='자막 경계 근처에 쉬는 곳이 없으면 멈추지 않고 가장 조용한 곳에서 자르고, 소리 없는 줄은 건너뜀')
+    ap.add_argument('--join', type=int, nargs='+', default=[], help='무음으로 자를 때 이 번호 덩어리를 다음 덩어리와 합침 (문장 안 긴 쉼)')
     a = ap.parse_args()
 
     # Vrew용 글과 앱 문구가 다르면(예: 영어 끝 마침표) 같은 이름의 .keys.txt에 앱 문구가 있다.
@@ -174,9 +180,14 @@ def main():
         segs = srt_segments(x, sr, entries, a.dip)
     else:
         segs = find_segments(x, sr, a.min_gap, a.min_len)
+        # 문장 안에서 길게 쉰 곳: 그 덩어리를 다음 덩어리와 합친다 (뒤에서부터 합쳐야 번호가 안 밀린다).
+        for k in sorted(a.join, reverse=True):
+            (s, _, lo, _), (_, e, _, hi) = segs[k - 1], segs[k]
+            segs[k - 1:k + 1] = [(s, e, lo, hi)]
     print(f'{a.wav}: {len(x) / sr:.2f}초, 소리 덩어리 {len(segs)}개, 대본 {len(lines)}줄')
-    for k, (s, e, _, _) in enumerate(segs):
-        print(f'  {k + 1:2}. {s / sr:6.2f} - {e / sr:6.2f}  {lines[k] if k < len(lines) else "(대본에 없음)"}')
+    for k, g in enumerate(segs):
+        at = f'{g[0] / sr:6.2f} - {g[1] / sr:6.2f}' if g else '  (소리 없음)   '
+        print(f'  {k + 1:2}. {at}  {lines[k] if k < len(lines) else "(대본에 없음)"}')
     if len(segs) != len(lines):
         raise SystemExit('덩어리 수와 대본 줄 수가 달라 멈춥니다. --min-gap 값을 바꾸거나 녹음을 확인하세요.')
 
@@ -187,12 +198,14 @@ def main():
     index = json.loads(index_path.read_text(encoding='utf-8')) if index_path.exists() else {}
     prefix = f'voice/{a.lang}/{a.name}-'
     index = {k: v for k, v in index.items() if not v.startswith(prefix)}
-    for k, ((s, e, lo, hi), text) in enumerate(zip(segs, lines), 1):
+    for k, (g, text) in enumerate(zip(segs, lines), 1):
+        if not g:
+            continue
         rel = f'{prefix}{k:02}.wav'
-        write_clip(ROOT / 'public' / rel, x, sr, s, e, lo, hi)
+        write_clip(ROOT / 'public' / rel, x, sr, *g)
         index[f'{a.lang}:{text}'] = rel
     index_path.write_text(json.dumps(dict(sorted(index.items())), ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print(f'{len(lines)}개 파일을 {out_dir}에 쓰고 {index_path.name}을 갱신했습니다.')
+    print(f'{sum(1 for g in segs if g)}개 파일을 {out_dir}에 쓰고 {index_path.name}을 갱신했습니다.')
 
 
 if __name__ == '__main__':
