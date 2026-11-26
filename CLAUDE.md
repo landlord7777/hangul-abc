@@ -4,6 +4,15 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
+## 0. Always Answer in Korean
+
+**Every reply to the user is written in Korean. No exceptions.**
+
+- This applies to every message, including the final report after long tool work, summaries, and questions (AskUserQuestion).
+- Code, file paths, commands, and quoted English (e.g. app text like "I love you") stay as they are. Explanations around them are Korean.
+- Before sending, check: is this message in Korean? If any sentence slipped into English, rewrite it.
+- Why: the user asked for this explicitly, and replies have sometimes come out in English after long work sessions.
+
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
