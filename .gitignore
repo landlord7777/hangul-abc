@@ -13,3 +13,4 @@ voice/full/*.wav
 voice/full/*.mp3
 voice/full/*.srt
 voice/full/old/
+*.tsbuildinfo
