@@ -48,3 +48,61 @@ tiger
 umbrella
 van
 web
+fox
+yo-yo
+zebra
+bus
+bed
+cup
+box
+bat
+hen
+net
+pen
+map
+fan
+bag
+log
+bug
+aah
+buh
+kuh
+duh
+eh
+fff
+guh
+huh
+ih
+juh
+lll
+mmm
+nnn
+ah
+puh
+kwuh
+rrr
+sss
+tuh
+uh
+vvv
+wuh
+ks
+yuh
+zzz
+red
+mom
+dad
+love
+star
+book
+pink
+I love you.
+Hello!
+I see a cat.
+I am happy.
+I like pink.
+Good night.
+I can run.
+Thank you.
+I love Mom.
+It is a dog.
