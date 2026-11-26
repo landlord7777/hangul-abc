@@ -164,7 +164,7 @@ def main():
         said = [l.strip() for l in script.read_text(encoding='utf-8-sig').splitlines() if l.strip()]
         if len(entries) != len(lines):
             raise SystemExit(f'자막 {len(entries)}개와 대본 {len(lines)}줄의 수가 달라 멈춥니다.')
-        diff = [f'{k}번 대본 "{w}" / 자막 "{t}"' for k, (w, (_, _, t)) in enumerate(zip(said, entries), 1) if w.rstrip('.') != t.rstrip('.')]
+        diff = [f'{k}번 대본 "{w}" / 자막 "{t}"' for k, (w, (_, _, t)) in enumerate(zip(said, entries), 1) if w.rstrip('.~') != t.rstrip('.~')]
         if diff:
             raise SystemExit('자막 글이 대본과 달라 멈춥니다.\n  ' + '\n  '.join(diff))
         print(f'{srt.name} 자막 시간으로 자릅니다.')

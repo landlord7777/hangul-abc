@@ -1,4 +1,3 @@
-English
 A
 B
 C
@@ -96,13 +95,3 @@ love
 star
 book
 pink
-I love you.
-Hello!
-I see a cat.
-I am happy.
-I like pink.
-Good night.
-I can run.
-Thank you.
-I love Mom.
-It is a dog.

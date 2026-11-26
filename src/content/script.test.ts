@@ -26,13 +26,14 @@ function everySay(): Say[] {
 
 it('앱이 읽는 모든 문구가 대본에 있다', () => {
   const script = scriptPhrases()
-  const missing = new Set(everySay().filter((s) => !script[s.lang].includes(s.text)).map((s) => `${s.lang}:${s.text}`))
+  const has = (s: Say) => script[s.lang].short.includes(s.text) || script[s.lang].long.includes(s.text)
+  const missing = new Set(everySay().filter((s) => !has(s)).map((s) => `${s.lang}:${s.text}`))
   expect([...missing]).toEqual([])
 })
 
 it('대본은 한 줄에 한 문장이다 (줄 안에서 쉬면 자르기가 틀어진다)', () => {
-  for (const lines of Object.values(scriptPhrases()))
-    for (const line of lines) {
+  for (const kinds of Object.values(scriptPhrases()))
+    for (const line of [...kinds.short, ...kinds.long]) {
       expect(line, line).not.toMatch(/[.!?,]\s*\S/)
       expect(line.trim(), line).toBe(line)
     }
