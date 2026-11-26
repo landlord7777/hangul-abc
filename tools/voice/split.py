@@ -65,7 +65,7 @@ def read_srt(path: Path):
     return [(t(*m[0:4]), t(*m[4:8]), ' '.join(m[8].split())) for m in re.findall(pat, text, re.S)]
 
 
-def srt_segments(x, sr, entries):
+def srt_segments(x, sr, entries, dip=False):
     """자막 경계를 가장 조용한 곳으로 옮기고, 경계 사이에서 소리가 있는 부분을 (시작, 끝) 표본 위치로 돌려준다."""
     rms = frame_rms(x, sr)
     thr = max(rms) * 0.02
@@ -78,6 +78,8 @@ def srt_segments(x, sr, entries):
         best = min(range(lo, hi + 1), key=lambda i: rms[i])
         if rms[best] > thr:
             bad.append(f'{k}번 "{text}" 앞 {s:.2f}초 근처에 쉬는 곳이 없음')
+            if dip:  # 자막 시간이 믿을 만할 때만: 쉬는 곳 대신 가장 조용한 곳에서 자른다.
+                print(f'  ! {bad.pop()} → 가장 조용한 {best * WIN:.2f}초에서 자릅니다.')
         cuts.append(best)
     cuts.append(n)
     if bad:
@@ -151,6 +153,7 @@ def main():
     ap.add_argument('--min-gap', type=float, default=0.65, help='클립을 나누는 최소 무음(초)')
     ap.add_argument('--min-len', type=float, default=0.1, help='이보다 짧은 소리는 잡음으로 버림(초)')
     ap.add_argument('--no-srt', action='store_true', help='.srt가 있어도 무음으로 자름 (자막 시간이 소리와 안 맞을 때)')
+    ap.add_argument('--dip', action='store_true', help='자막 경계 근처에 쉬는 곳이 없으면 멈추지 않고 가장 조용한 곳에서 자름')
     a = ap.parse_args()
 
     # Vrew용 글과 앱 문구가 다르면(예: 영어 끝 마침표) 같은 이름의 .keys.txt에 앱 문구가 있다.
@@ -168,7 +171,7 @@ def main():
         if diff:
             raise SystemExit('자막 글이 대본과 달라 멈춥니다.\n  ' + '\n  '.join(diff))
         print(f'{srt.name} 자막 시간으로 자릅니다.')
-        segs = srt_segments(x, sr, entries)
+        segs = srt_segments(x, sr, entries, a.dip)
     else:
         segs = find_segments(x, sr, a.min_gap, a.min_len)
     print(f'{a.wav}: {len(x) / sr:.2f}초, 소리 덩어리 {len(segs)}개, 대본 {len(lines)}줄')
