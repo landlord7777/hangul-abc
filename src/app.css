@@ -231,10 +231,6 @@
   box-shadow: 0 4px 14px rgba(217, 79, 151, 0.15);
 }
 
-.level-card.locked {
-  opacity: 0.55;
-}
-
 .level-head {
   display: flex;
   align-items: center;
@@ -252,10 +248,6 @@
   color: #fff;
   font-size: 26px;
   font-weight: 800;
-}
-
-.level-card.locked .level-no {
-  background: #eee;
 }
 
 .level-icon {

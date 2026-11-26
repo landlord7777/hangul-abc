@@ -1,10 +1,8 @@
-// 과목 화면 — 레벨과 활동을 고르고, 잠긴 레벨과 최고 기록을 보여준다
-import { LINES } from '../content/lines'
+// 과목 화면 — 레벨과 활동을 고르고 최고 기록을 보여준다 (모든 레벨이 늘 열려 있다)
 import { LEVELS } from '../content'
 import { TRACE } from '../content/trace'
 import type { ActivityId, Subject } from '../content/types'
-import { PASS, actKey, isUnlocked, type Progress } from '../lib/progress'
-import { speak } from '../lib/speech'
+import { PASS, actKey, type Progress } from '../lib/progress'
 import { fontClass } from './lesson'
 
 const ACTS: Record<ActivityId, { icon: string; label: string }> = {
@@ -36,7 +34,6 @@ export default function SubjectScreen({ subject, progress, onBack, onStart }: {
         <div className="stars inline">⭐ {progress.stars}</div>
       </header>
       <div className="levels">
-        {/* 따라 쓰기는 레벨 잠금 없이 언제나 고를 수 있다. */}
         <div className="level-card trace-card">
           <div className="level-head">
             <span className="level-no">{ACTS.A5.icon}</span>
@@ -55,16 +52,11 @@ export default function SubjectScreen({ subject, progress, onBack, onStart }: {
             })}
           </div>
         </div>
-        {levels.map((lv, i) => {
-          const open = isUnlocked(progress, subject, lv.no, levels[i - 1]?.acts ?? [])
+        {levels.map((lv) => {
           return (
-            <div
-              key={lv.no}
-              className={`level-card${open ? '' : ' locked'}`}
-              onClick={open ? undefined : () => speak(LINES.locked)}
-            >
+            <div key={lv.no} className="level-card">
               <div className="level-head">
-                <span className="level-no">{open ? lv.no : '🔒'}</span>
+                <span className="level-no">{lv.no}</span>
                 <span className={`level-icon ${fontClass(subject)}`}>{lv.icon}</span>
                 <span className="level-title">{lv.title}</span>
               </div>
@@ -72,7 +64,7 @@ export default function SubjectScreen({ subject, progress, onBack, onStart }: {
                 {lv.acts.map((a) => {
                   const best = progress.best[actKey(subject, lv.no, a)]
                   return (
-                    <button key={a} className="act-btn" disabled={!open} onClick={() => onStart(lv.no, a)}>
+                    <button key={a} className="act-btn" onClick={() => onStart(lv.no, a)}>
                       <span className="act-icon">{ACTS[a].icon}</span>
                       {ACTS[a].label}
                       {best !== undefined && (

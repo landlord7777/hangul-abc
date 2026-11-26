@@ -5,7 +5,6 @@ export const LINES = {
   hello: [ko('안녕!'), ko('오늘은 무엇을 공부할까?')],
   koStart: [ko('한글 공부')],
   enStart: [en('English')],
-  locked: [ko('앞 레벨을 먼저 해 보자!')],
   quizIntro: [ko('잘 듣고 맞는 것을 골라 봐.')],
   buildIntro: [ko('블록을 눌러서 똑같이 만들어 봐.')],
   pictureQ: [ko('그림에 맞는 낱말을 골라 봐.')],
