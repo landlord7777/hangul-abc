@@ -1,10 +1,10 @@
-// 보기 셋 중에서 맞는 것을 고르는 문제 화면 — A2 듣고 고르기, A7 낱말 퀴즈, A8 소리 합치기, A9 헷갈리는 글자
+// 보기 셋 중에서 맞는 것을 고르는 문제 화면 — A2 듣고 고르기, A7 낱말 퀴즈, A8 소리 합치기, A9 헷갈리는 글자, 틀린 문제 다시 하기
 import { LINES } from '../content/lines'
 import { useEffect, useRef, useState } from 'react'
 import Fairy from '../components/Fairy'
 import LessonBar from '../components/LessonBar'
 import { speak } from '../lib/speech'
-import type { Level, QuizAct, Say } from '../content/types'
+import type { Level, Question, QuizAct, Say, Subject } from '../content/types'
 import { NEXT_DELAY, fontClass, praise, type LessonProps } from './lesson'
 
 // 첫 문제 앞에 읽는 안내 말. 낱말 퀴즈는 문제마다 종류가 달라 문제의 say에 안내 말이 들어 있다.
@@ -12,9 +12,20 @@ const INTRO: Record<QuizAct, Say[]> = { A2: LINES.quizIntro, A7: [], A8: LINES.b
 
 const questions = (level: Level, act: QuizAct) => (act === 'A2' ? level.quiz() : level.extra![act]!())
 
-export default function QuizLesson({ subject, level, act, onExit, onFinish }: LessonProps) {
-  const quizAct = act as QuizAct
-  const [qs] = useState(() => questions(level, quizAct))
+export default function QuizLesson({ subject, level, act, onExit, onFinish, onAnswer }: LessonProps) {
+  const [qs] = useState(() => questions(level, act as QuizAct))
+  return <Quiz subject={subject} qs={qs} intro={INTRO[act as QuizAct]} onExit={onExit} onFinish={onFinish} onAnswer={onAnswer} />
+}
+
+/** 문제 목록을 받아 차례로 낸다. 문제마다 첫 시도에 맞혔는지 onAnswer로 알린다. */
+export function Quiz({ subject, qs, intro, onExit, onFinish, onAnswer }: {
+  subject: Subject
+  qs: Question[]
+  intro: Say[] // 첫 문제 앞에 읽는 안내 말
+  onExit: () => void
+  onFinish: (correct: number, total: number) => void
+  onAnswer?: (q: Question, firstTry: boolean) => void
+}) {
   const [i, setI] = useState(0)
   const [state, setState] = useState<'ask' | 'wrong' | 'right'>('ask')
   const [wrong, setWrong] = useState<string[]>([])
@@ -23,20 +34,24 @@ export default function QuizLesson({ subject, level, act, onExit, onFinish }: Le
   const q = qs[i]
 
   useEffect(() => {
-    speak(i === 0 ? [...INTRO[quizAct], ...q.say] : q.say)
-  }, [i, q, quizAct])
+    speak(i === 0 ? [...intro, ...q.say] : q.say)
+  }, [i, q, intro])
   useEffect(() => () => window.clearTimeout(timer.current), [])
 
   const choose = (opt: string) => {
     if (state === 'right') return
     if (opt !== q.answer) {
       // 틀리면 정답을 반짝이고 다시 들려준다. 정답을 눌러야 넘어간다.
+      if (state === 'ask') onAnswer?.(q, false)
       setState('wrong')
       setWrong((w) => [...w, opt])
       speak([...LINES.retry, ...q.say])
       return
     }
-    if (state === 'ask') correct.current++
+    if (state === 'ask') {
+      correct.current++
+      onAnswer?.(q, true)
+    }
     setState('right')
     speak([praise(), ...(q.after ?? [])])
     timer.current = window.setTimeout(() => {

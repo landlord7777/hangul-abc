@@ -1,4 +1,4 @@
-// 과목 화면 — 레벨과 활동을 고르고 최고 기록을 보여준다 (모든 레벨이 늘 열려 있다)
+// 과목 화면 — 레벨과 활동, 틀린 문제 다시 하기를 고르고 최고 기록을 보여준다 (모든 레벨이 늘 열려 있다)
 import { LEVELS } from '../content'
 import { TRACE } from '../content/trace'
 import type { ActivityId, Subject } from '../content/types'
@@ -17,11 +17,13 @@ const ACTS: Record<ActivityId, { icon: string; label: string }> = {
 
 const bestMark = (act: ActivityId, best: number) => (act === 'A1' ? '✔️' : best >= PASS ? '⭐' : `${Math.round(best * 100)}%`)
 
-export default function SubjectScreen({ subject, progress, onBack, onStart }: {
+export default function SubjectScreen({ subject, progress, reviewCount, onBack, onStart, onReview }: {
   subject: Subject
   progress: Progress
+  reviewCount: number // 틀린 문제 목록에 남은 수
   onBack: () => void
   onStart: (level: number, act: ActivityId) => void
+  onReview: () => void
 }) {
   const levels = LEVELS[subject]
   return (
@@ -34,6 +36,17 @@ export default function SubjectScreen({ subject, progress, onBack, onStart }: {
         <div className="stars inline">⭐ {progress.stars}</div>
       </header>
       <div className="levels">
+        {reviewCount > 0 && (
+          <div className="level-card review-card">
+            <div className="acts">
+              <button className="act-btn" onClick={onReview}>
+                <span className="act-icon">🔁</span>
+                틀린 문제 다시 하기
+                <span className="best">{reviewCount}개</span>
+              </button>
+            </div>
+          </div>
+        )}
         <div className="level-card trace-card">
           <div className="level-head">
             <span className="level-no">{ACTS.A5.icon}</span>
