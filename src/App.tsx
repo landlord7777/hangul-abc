@@ -7,7 +7,7 @@ import { LINES } from './content/lines'
 import type { ActivityId, Question, Subject } from './content/types'
 import { EMPTY_PROGRESS, actKey, record, type Progress } from './lib/progress'
 import { EMPTY_REVIEW, mark, reviewQuestions, type Review } from './lib/review'
-import { waiting } from './lib/stickers'
+import { fromPlaced, waiting, type Album } from './lib/stickers'
 import { load, save } from './lib/storage'
 import { EMPTY_USAGE, addBonus, addSeconds, remainingSeconds, type Usage } from './lib/usage'
 import BuildLesson from './screens/BuildLesson'
@@ -42,7 +42,8 @@ export default function App() {
   const [usage, setUsage] = useState<Usage>(() => load('usage', EMPTY_USAGE))
   const [limitMin, setLimitMin] = useState(() => load(LIMIT_KEY, DEFAULT_LIMIT))
   const [review, setReview] = useState<Review>(() => load('review', EMPTY_REVIEW))
-  const [placed, setPlaced] = useState(() => load('stickers.placed', 0)) // 붙인 스티커 수
+  // 스티커북 (예전에는 붙인 수만 'stickers.placed'에 저장했다)
+  const [album, setAlbum] = useState<Album>(() => load<Album | null>('stickers.album', null) ?? fromPlaced(load('stickers.placed', 0)))
 
   useEffect(() => {
     void navigator.storage?.persist?.()
@@ -102,7 +103,7 @@ export default function App() {
       return n
     })
 
-  const gifts = waiting(progress.stars, placed)
+  const gifts = waiting(progress.stars, album)
 
   if (screen.name === 'check') return <CheckScreen onBack={() => setScreen({ name: 'parent' })} />
   if (screen.name === 'parent')
@@ -185,10 +186,10 @@ export default function App() {
       return (
         <StickerBook
           stars={progress.stars}
-          placed={placed}
-          onPlace={() => {
-            setPlaced(placed + 1)
-            save('stickers.placed', placed + 1)
+          album={album}
+          onChange={(a) => {
+            setAlbum(a)
+            save('stickers.album', a)
           }}
           onBack={() => setScreen({ name: 'home' })}
         />

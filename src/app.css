@@ -790,9 +790,22 @@
 /* 스티커북 */
 .sticker-top {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
   gap: 12px;
   margin-top: 8px;
+}
+
+/* 권 넘기기: ◀ 제목 ▶ */
+.book-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.book-nav .icon-btn:disabled {
+  opacity: 0.3;
 }
 
 .sticker-msg {
@@ -810,7 +823,7 @@
   /* 30칸(6×5)이 스크롤 없이 한 화면에 들어오게 높이에 맞춰 폭을 줄인다 */
   max-width: min(900px, calc((100dvh - 230px) * 1.1));
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 14px;
   margin-top: 16px;
   padding: 20px;
@@ -842,6 +855,49 @@
 
 .sticker.new {
   animation: stick 0.6s ease-out;
+}
+
+/* 큰 스티커로 바꿀 스티커 고르기 */
+.sticker.pick {
+  animation: wiggle 0.5s ease-in-out infinite alternate;
+}
+
+.sticker.picked {
+  animation: none;
+  background: #e8f3ff;
+  box-shadow: 0 0 0 5px #6ab4ff;
+  transform: scale(0.85);
+}
+
+@keyframes wiggle {
+  from {
+    transform: rotate(-4deg);
+  }
+  to {
+    transform: rotate(4deg);
+  }
+}
+
+/* 큰 스티커 그림은 칸 크기에 맞춘다 (칸 크기 단위를 모르는 기기는 앞 값을 쓴다) */
+.sticker.big > span {
+  font-size: clamp(56px, 9vw, 96px);
+  font-size: 68cqi;
+  line-height: 1;
+}
+
+/* 큰 스티커 장: 4칸씩, 많아지면 이 안에서 스크롤 */
+.sticker-grid.big-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-height: calc(100dvh - 230px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.sticker.big {
+  container-type: size;
+  background: radial-gradient(circle, #fffbe6 40%, #ffe3f1);
+  border: 5px solid #ffd54f;
+  box-shadow: 0 0 18px #ffe08a;
 }
 
 @keyframes stick {
@@ -887,7 +943,7 @@
 
 @media (max-width: 720px) {
   .sticker-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     padding: 12px;
     gap: 10px;
   }
